@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -V
+#PBS -N download_fastq
+#PBS -l nodes=1:ppn=4,mem=64gb,walltime=500:00:00
+#PBS -q batch
+#PBS -j oe
+#PBS -o /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/reseq_WD/01_raw/0_download_1.log
+
+
+#this script seems to work great when submitting via PBS HPC
+set -euo pipefail
+
+OUTDIR=/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/raw_WGS
+mkdir -p "$OUTDIR"
+cd "$OUTDIR"
+
+echo "Starting download at $(date)"
+
+wget https://download2.txgen.tamu.edu/kevin.burns/26035_FULL_20260425.100716_25529Bns/003/fastq_25529Bns_N26035_L003.tar
+
+echo "Download finished at $(date)"

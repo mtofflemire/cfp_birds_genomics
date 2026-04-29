@@ -1,0 +1,12 @@
+*
+!scripts/
+!scripts/**
+
+# keep gitignore tracked
+!.gitignore
+
+# ignore junk inside scripts
+scripts/**/.DS_Store
+scripts/**/.Rhistory
+scripts/**/.RData
+scripts/**/.Rapp.history

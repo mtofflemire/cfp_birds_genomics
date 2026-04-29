@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -V
+#PBS -N extract_fastq
+#PBS -l nodes=1:ppn=4,mem=64gb,walltime=500:00:00
+#PBS -q batch
+#PBS -j oe
+#PBS -o /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/02_raw_WGS/logs/1_extract_fastq.log
+
+set -euo pipefail
+
+OUTDIR=/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/02_raw_WGS
+TARFILE=fastq_25529Bns_N26035_L003.tar
+
+mkdir -p "$OUTDIR"
+cd "$OUTDIR"
+
+echo "Starting extraction at $(date)"
+tar -xvf "$TARFILE"
+echo "Extraction finished at $(date)"
