@@ -1,0 +1,48 @@
+#!/bin/bash
+#PBS -V
+#PBS -N download_refs
+#PBS -l nodes=1:ppn=4,mem=64gb,walltime=500:00:00
+#PBS -q batch
+#PBS -j oe
+#PBS -o /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/01_REF/logs/2_download.log
+
+set -euo pipefail
+
+cd "$PBS_O_WORKDIR"
+
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate genomics
+
+PROJECT_DIR="/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds"
+REF_DIR="${PROJECT_DIR}/01_REF"
+LOG_DIR="${REF_DIR}/logs"
+
+mkdir -p "$REF_DIR"
+mkdir -p "$LOG_DIR"
+cd "$REF_DIR"
+
+
+
+# Download Black-capped chickadee reference genome
+datasets download genome accession GCF_030490865.1 \
+  --include genome \
+  --filename poecile_atricapillus.zip
+
+mkdir -p poecile_atricapillus
+unzip -o poecile_atricapillus.zip -d poecile_atricapillus/tmp
+mv poecile_atricapillus/tmp/ncbi_dataset/data/GCF_030490865.1/*_genomic.fna poecile_atricapillus/
+rm -rf poecile_atricapillus/tmp
+
+
+
+# Download Downy woodpecker reference genome
+datasets download genome accession GCF_014839835.1 \
+  --include genome \
+  --filename dryobates_pubescens.zip
+
+mkdir -p dryobates_pubescens
+unzip -o dryobates_pubescens.zip -d dryobates_pubescens/tmp
+mv dryobates_pubescens/tmp/ncbi_dataset/data/GCF_014839835.1/*_genomic.fna dryobates_pubescens/
+rm -rf dryobates_pubescens/tmp
+
+
