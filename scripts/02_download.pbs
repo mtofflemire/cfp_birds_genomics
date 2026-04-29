@@ -7,7 +7,8 @@
 #PBS -o /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/01_REF/logs/2_download.log
 
 
-
+#this code will download reference genomes directly from the ncbi database
+#this method seems to be a lot faster than manually downloading and rsyncing files to HPC
 #set up pathways and directories for inputs and outputs
 #i ended up delting the log folder becuase i didnt like the way it looked. 
 set -euo pipefail
@@ -22,8 +23,6 @@ mkdir -p "$LOG_DIR"
 cd "$REF_DIR"
 
 
-
-
 #this download appeared to work.
 #I had to delete the zip folder though manually for both reference genomes
 # Download Black-capped chickadee reference genome
@@ -32,8 +31,6 @@ mkdir -p poecile_atricapillus
 unzip -o poecile_atricapillus.zip -d poecile_atricapillus/tmp
 mv poecile_atricapillus/tmp/ncbi_dataset/data/GCF_030490865.1/*_genomic.fna poecile_atricapillus/
 rm -rf poecile_atricapillus/tmp
-
-
 
 
 
