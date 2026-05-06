@@ -1,0 +1,47 @@
+#!/bin/bash
+#PBS -V
+#PBS -N trim.fastq.node1
+#PBS -l nodes=1:ppn=20,mem=128gb,walltime=04:00:00
+#PBS -q batch
+#PBS -j oe
+#PBS -o /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/03_CLEAN/04_trim.log
+
+set -euo pipefail
+source ~/miniconda3/etc/profile.d/conda.sh; conda activate genomics
+
+THREADS=20
+
+# Input raw FASTQ directory and output directory for cleaned reads/QC
+IN=/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/02_RAW
+OUT=/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/03_CLEAN
+mkdir -p "$OUT"
+
+
+# Create FastQC output directory
+FASTQC_DIR="$OUT/fastqc"
+mkdir -p "$FASTQC_DIR"
+
+shopt -s nullglob
+
+
+# Loop through all R1 files and find matching R2 mates
+for R1 in "$IN"/*_R1_*.fastq.gz; do
+  R2="${R1/_R1_/_R2_}"; [[ -f "$R2" ]] || continue
+  base="$(basename "${R1%%_R1_*}")"
+
+  # Trim adapters and poly-G tails from paired-end reads + generate reports
+  fastp -i "$R1" -I "$R2" \
+        -o "$OUT/${base}_R1.cleaned.fastq.gz" \
+        -O "$OUT/${base}_R2.cleaned.fastq.gz" \
+        --detect_adapter_for_pe \
+        --trim_poly_g \
+        --length_required 30 \
+        --thread "$THREADS" \
+        --html "$OUT/${base}.fastp.html" \
+        --json "$OUT/${base}.fastp.json"
+done
+
+
+
+# Run FastQC on all cleaned FASTQ files
+fastqc -t "$THREADS" -o "$FASTQC_DIR" "$OUT"/*.cleaned.fastq.gz

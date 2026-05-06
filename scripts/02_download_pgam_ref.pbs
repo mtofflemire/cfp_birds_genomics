@@ -34,12 +34,5 @@ rm -rf poecile_atricapillus/tmp
 
 
 
-#this was also appears to have worked just fine. output is .fna which is good
-# Download Downy woodpecker reference genome
-datasets download genome accession GCF_014839835.1 --include genome --filename dryobates_pubescens.zip
-mkdir -p dryobates_pubescens
-unzip -o dryobates_pubescens.zip -d dryobates_pubescens/tmp
-mv dryobates_pubescens/tmp/ncbi_dataset/data/GCF_014839835.1/*_genomic.fna dryobates_pubescens/
-rm -rf dryobates_pubescens/tmp
 
 

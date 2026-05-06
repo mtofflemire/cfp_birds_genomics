@@ -1,0 +1,15 @@
+#!/bin/bash
+#PBS -V
+#PBS -N index_reference_mem2
+#PBS -l nodes=1:ppn=2,mem=8gb,walltime=02:00:00
+#PBS -q batch
+#PBS -j oe
+#PBS -o /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/out/logs/01_index.log
+
+set -euo pipefail
+cd "$PBS_O_WORKDIR"
+source ~/miniconda3/etc/profile.d/conda.sh; conda activate genomics
+
+bwa-mem2 index /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/references/poecile_atricapillus/GCF_030490865.1_bPoeAtr1.hap1_genomic.fna
+samtools faidx /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/references/poecile_atricapillus/GCF_030490865.1_bPoeAtr1.hap1_genomic.fna
+gatk CreateSequenceDictionary -R /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/references/poecile_atricapillus/GCF_030490865.1_bPoeAtr1.hap1_genomic.fna -O /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/references/poecile_atricapillus/GCF_030490865.1_bPoeAtr1.hap1_genomic.dict
