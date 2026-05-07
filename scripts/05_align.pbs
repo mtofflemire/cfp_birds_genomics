@@ -1,0 +1,31 @@
+#!/bin/bash
+#PBS -V
+#PBS -N align.poecile
+#PBS -l nodes=1:ppn=20,mem=128gb,walltime=500:00:00
+#PBS -q batch
+#PBS -j oe
+#PBS -o /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/04_MAPPING/05_align.log
+
+set -euo pipefail
+shopt -s nullglob
+cd "${PBS_O_WORKDIR:-$PWD}"
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate genomics
+
+REF="/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/01_REF/poecile_atricapillus/GCF_030490865.1_bPoeAtr1.hap1_genomic.fna"
+INPUT_DIR="/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/03_CLEAN"
+OUTDIR="/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/04_MAPPING"
+THREADS=20
+mkdir -p "$OUTDIR"
+
+for R1 in "$INPUT_DIR"/*_R1.cleaned.fastq.gz; do
+  R2="${R1/_R1.cleaned.fastq.gz/_R2.cleaned.fastq.gz}"
+  [[ -f "$R2" ]] || { echo "Missing mate for $R1"; continue; }
+  base="$(basename "$R1")"; BASENAME="${base%%_R1.cleaned.fastq.gz}"
+  SAMPLE="$(echo "$BASENAME" | cut -d_ -f2)"; LANE="$(echo "$BASENAME" | cut -d_ -f3-4)"
+  echo "Aligning $BASENAME"
+  bwa-mem2 mem -t "$THREADS" -R "@RG\tID:${BASENAME}\tSM:${SAMPLE}\tLB:lib1\tPL:ILLUMINA\tPU:${LANE}" "$REF" "$R1" "$R2" \
+    | samtools sort -@ "$((THREADS/2))" -o "$OUTDIR/${BASENAME}.sorted.bam" -
+  samtools index "$OUTDIR/${BASENAME}.sorted.bam"
+  samtools flagstat "$OUTDIR/${BASENAME}.sorted.bam" > "$OUTDIR/${BASENAME}.flagstat.txt"
+done
