@@ -1,0 +1,44 @@
+#!/bin/bash
+#PBS -V
+#PBS -N call.variants.moch
+#PBS -l nodes=node20:ppn=7,mem=32gb,walltime=500:00:00
+#PBS -q batch
+#PBS -t 1-78%8
+#PBS -o /usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/05_VCF/hc_gvcf_array.$PBS_ARRAYID.log
+#PBS -j oe
+
+set -euo pipefail
+
+cd "$PBS_O_WORKDIR"
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate genomics
+
+REF=/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/01_REF/poecile_atricapillus/GCF_030490865.1_bPoeAtr1.hap1_genomic.fna
+BAM_DIR=/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/04_MAPPING
+OUT_DIR=/usr/scratch2/userdata2/mtofflemire/projects/cfp_birds/05_VCF
+
+mkdir -p "$OUT_DIR"
+
+SAMPLE="$(find "$BAM_DIR" -maxdepth 1 -name "*.dedup.bam" -exec basename {} .dedup.bam \; | sort | sed -n "${PBS_ARRAYID}p")"
+[ -n "${SAMPLE:-}" ] || exit 0
+
+BAM="$BAM_DIR/${SAMPLE}.dedup.bam"
+GVCF="$OUT_DIR/${SAMPLE}.g.vcf.gz"
+
+[ -s "$BAM" ] || exit 1
+[ ! -s "$GVCF" ] || exit 0
+
+gatk --java-options "-Xmx8g" HaplotypeCaller \
+  -R "$REF" \
+  -I "$BAM" \
+  -O "$GVCF" \
+  -ERC GVCF \
+  --native-pair-hmm-threads "${PBS_NUM_PPN:-7}" \
+  --annotation QualByDepth \
+  --annotation FisherStrand \
+  --annotation StrandOddsRatio \
+  --annotation RMSMappingQuality \
+  --annotation MappingQualityRankSumTest \
+  --annotation ReadPosRankSumTest
+
+gatk IndexFeatureFile -I "$GVCF"
